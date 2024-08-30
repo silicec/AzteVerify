@@ -1,5 +1,5 @@
 {
-  "name": "ward",
+  "name": "AzteVerify",
   "version": "4.0.0",
   "description": "OTA server verification bot",
   "main": "index.js",
