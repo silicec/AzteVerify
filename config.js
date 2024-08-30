@@ -14,7 +14,7 @@ module.exports = {
         
         // —— Set the bot's presence, for statusType see: https://discord-api-types.dev/api/discord-api-types-v10/enum/ActivityType
         statusType: 3, // 1 (STREAMING), 2 (LISTENING), 3 (WATCHING), 5 (COMPETING). Default is 0 (PLAYING). 
-        statusMsg: "unverified users!",
+        statusMsg: "Caut useri neverificati!",
 
     },
 
