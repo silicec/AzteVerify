@@ -7,8 +7,8 @@ module.exports = {
 
     Discord: {
         // —— Things that are required for the whole project to work.
-        token: "", // —— Bot token.
-        botId: "", // —— Bot ID.
+        token: "MTI3OTAzNjc4NzE3NTQ2MDg5NQ.G6MFEc.bG526fD08SWyRKDKrun7KvdlIa1Lq9SJSDvVhw", // —— Bot token.
+        botId: "1279036787175460895", // —— Bot ID.
         guildId: "1099254930075832330", // —— Server id.
         verifiedRole: "1099255114549694605", // —— Aici e rolu verificat.
         
