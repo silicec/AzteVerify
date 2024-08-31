@@ -100,6 +100,10 @@ jobs:
         run: |
           kubectl scale --replicas=1 deployment/aztemarket-service-${{ steps.tag_version.outputs.new_tag }}
 
+      - name: Expose deployments
+        run: |
+          kubectl expose deployment/lavalink-service --type="LoadBalancer" --port=8080 --target-port=8080 --name=${{ env.AZTEVERIFY_IMAGE }}
+
       - name: Show created Pods
         run: |
           kubectl get pods
@@ -111,17 +115,3 @@ jobs:
           tag: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
-      
-      - name: Store releases for changelog processing
-        id: release-store
-        run: |
-          echo "NEW_TAG=${{ steps.tag_version.outputs.new_tag }}" >> $GITHUB_OUTPUT
-          echo "PREV_TAG=${{ steps.tag_version.outputs.previous_tag }}" >> $GITHUB_OUTPUT
-
-  release-changelog:
-    needs: [continuous-deployment]
-    uses: ./.github/workflows/changelog.yml
-    secrets: inherit
-    with:
-      newRelease: ${{ needs.continuous-deployment.outputs.new-tag }}
-      previousRelease: ${{ needs.continuous-deployment.outputs.previous-tag }}
