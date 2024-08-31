@@ -1,7 +1,7 @@
 
 // —— Requiring the packages the we need.
 const fs = require("fs");
-const { Client, Collection, Partials } = require("discord.js");
+const { Client, GatewayIntentBits, Partials, Collection, ActivityType } = require("discord.js");
 const { Signale } = require('signale');
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord-api-types/v9");
@@ -14,12 +14,17 @@ const config = require("./config.js");
 const logger = new Signale({ scope: 'Discord' });
 
 // —— Initializing the client.
-const client = new Client({ 
-    intents: [ 131071 ], // Basically for (most?) of the intents.
-    partials: [
-        Partials.Channel
-    ] 
-});
+const client = new Client({
+	intents: [
+	  GatewayIntentBits.Guilds,
+	  GatewayIntentBits.GuildMessages,
+	  GatewayIntentBits.GuildPresences,
+	  GatewayIntentBits.GuildMessageReactions,
+	  GatewayIntentBits.DirectMessages,
+	  GatewayIntentBits.MessageContent
+	],
+	partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember, Partials.Reaction]
+  })
 
 // —— All event files of the event handler.
  const eventFiles = fs
