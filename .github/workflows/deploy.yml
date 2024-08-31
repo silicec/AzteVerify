@@ -6,7 +6,7 @@ on:
       - '.github/**'
       - 'README.md'
       - '.gitignore'
-      - '.gitmodules'
+      - 'LICENSE'
     branches: [ 'main' ]
 
   workflow_dispatch:
@@ -18,7 +18,6 @@ env:
   GKE_REGION: europe-west2 
   CLUSTER_NAME: ${{ secrets.GKE_CLUSTER_NAME }}
   AZTEVERIFY_IMAGE: azteverify-service
-  AZTEVERIFY_CONFIG_ENCODED: ${{ secrets.ENV_ENCODED_STRING }}
 
 jobs:
 
@@ -42,11 +41,6 @@ jobs:
         with:
           github_token: ${{ secrets.GH_TOKEN }}
           dry_run: true
-
-      - name: Setup deployment environment
-        run: |
-          : # Environment variables for AzteMarket
-          echo ${{ env.AZTEVERIFY_CONFIG_ENCODED }} | base64 --decode > .env
 
       - name: Generate SHA output
         id: vars
