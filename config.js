@@ -12,7 +12,7 @@ module.exports = {
         guildId: "1099254930075832330",
         verifiedRole: "1099255114549694605",
         statusType: 3,
-        statusMsg: "and protecting the Order",
+        statusMsg: "and protecting you",
         rulesEnabled: false,
     },
 
