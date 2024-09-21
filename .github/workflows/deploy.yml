@@ -1,0 +1,95 @@
+name: Start Application 
+
+on:
+  push:
+    paths-ignore:
+      - '.github/**'
+      - 'README.md'
+      - '.gitignore'
+      - 'LICENSE'
+    branches: [ 'main' ]
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ secrets.GCE_PROJECT }}
+  DOCKER_ARTIFACT_REPOSITORY: ${{ secrets.GCE_PROJECT_DOCKER_ARTIFACT_REGISTRY }}
+  GKE_ZONE: europe-west2-c
+  GKE_REGION: europe-west2 
+  CLUSTER_NAME: ${{ secrets.GKE_CLUSTER_NAME }}
+  AZTEVERIFY_IMAGE: azteverify-service
+
+jobs:
+  continuous-deployment:
+    environment: production
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate SHA output
+        id: vars
+        run: echo "GITHUB_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+      
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          token_format: 'access_token'
+          create_credentials_file: true
+          workload_identity_provider: ${{ secrets.GCP_GITHUB_WIP }}
+          service_account: ${{ secrets.GCP_GITHUB_SERVICE_ACCOUNT }}
+          access_token_lifetime: '120s'
+      
+      - uses: 'docker/login-action@v3'
+        name: 'Docker login'
+        with:
+          registry: '${{ env.GKE_REGION }}-docker.pkg.dev'
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.access_token }}'
+
+      - name: 'Docker build'
+        run: |
+          docker build --tag "${{ env.GKE_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.DOCKER_ARTIFACT_REPOSITORY }}/${{ env.AZTEVERIFY_IMAGE }}:${{ github.run_number }}" -f Dockerfile .
+      
+      - name: 'Docker push'
+        run: |
+          docker push "${{ env.GKE_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.DOCKER_ARTIFACT_REPOSITORY }}/${{ env.AZTEVERIFY_IMAGE }}:${{ github.run_number }}"
+      
+      - name: Connect to GKE
+        uses: google-github-actions/get-gke-credentials@v2.2.0
+        with:
+          cluster_name: ${{ env.CLUSTER_NAME }}
+          location: ${{ env.GKE_ZONE }}
+      
+      - name: Update GKE Deployment with latest image
+        run: |
+          kubectl set image deployment/azteverify-service azteverify=${{ env.GKE_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.DOCKER_ARTIFACT_REPOSITORY }}/${{ env.AZTEVERIFY_IMAGE }}:${{ github.run_number }}
+      
+      - name: Expose deployments (if not already exposed)
+        run: |
+          kubectl expose deployment azteverify-service --type="LoadBalancer" --load-balancer-ip="${{ secrets.LOAD_BALANCER_IP }}" --port=80 --target-port=80 --name=${{ env.AZTEVERIFY_IMAGE }}-lb-${{ steps.vars.outputs.GITHUB_SHA }} || true
+      
+      - name: Show created Pods
+        run: |
+          kubectl get pods
+      
+      - name: Create a new GitHub release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          tag: release-${{ github.run_number }}  # Changed to avoid 40 hex characters
+          name: Release ${{ github.run_number }}
+          body: Release ${{ github.run_number }} build
+        continue-on-error: true
+
+      - name: Ensure release is created (if it failed earlier)
+        run: |
+          if [ $? -ne 0 ]; then
+            echo "Release creation failed. Checking existing releases..."
+            gh release list
+          fi

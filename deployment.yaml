@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: azteverify-service
+  labels:
+    app: azteverify
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: azteverify
+  template:
+    metadata:
+      labels:
+        app: azteverify
+    spec:
+      containers:
+      - name: azteverify
+        image: europe-west2-docker.pkg.dev/aztebot-403621/aztebot-docker-ar/azteverify-service:latest # Ensures using the latest tag
+        imagePullPolicy: Always
+        env:
+        - name: SERVER_DOMAIN
+          valueFrom:
+            secretKeyRef:
+              name: discord-bot-secrets
+              key: SERVER_DOMAIN
+        - name: DISCORD_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: discord-bot-secrets
+              key: DISCORD_TOKEN
+        - name: DISCORD_BOT_ID
+          valueFrom:
+            secretKeyRef:
+              name: discord-bot-secrets
+              key: DISCORD_BOT_ID
+        - name: RECAPTCHA_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: discord-bot-secrets
+              key: RECAPTCHA_SECRET
+        - name: RECAPTCHA_PUBLIC
+          valueFrom:
+            secretKeyRef:
+              name: discord-bot-secrets
+              key: RECAPTCHA_PUBLIC
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: DB_HOST
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: DB_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: DB_NAME
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: azteverify-service
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  loadBalancerIP: 34.105.144.45 # Use your specific IP address
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: azteverify
