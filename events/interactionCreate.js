@@ -9,7 +9,7 @@ module.exports = {
         if (!interaction.isButton() && !interaction.isCommand()) return; // Only handle button and command interactions
 
         // Retry function to handle retries on 503 errors
-        async function retryOnFailure(fn, retries = 5, delay = 1000) {
+        async function retryOnFailure(fn, retries = 5, delay = 5000) {
             for (let i = 0; i < retries; i++) {
                 try {
                     return await fn();
