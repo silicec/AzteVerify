@@ -9,14 +9,15 @@ module.exports = {
         if (!interaction.isButton() && !interaction.isCommand()) return; // Only handle button and command interactions
 
         // Retry function to handle retries on 503 errors
-        async function retryOnFailure(fn, retries = 3, delay = 1000) {
+        async function retryOnFailure(fn, retries = 5, delay = 1000) {
             for (let i = 0; i < retries; i++) {
                 try {
                     return await fn();
                 } catch (error) {
-                    if (error.status === 503 && i < retries - 1) {
-                        console.warn(`Service Unavailable, retrying in ${delay}ms...`);
-                        await new Promise(resolve => setTimeout(resolve, delay));
+                    if ((error.status === 503 || error.code === 'UND_ERR_CONNECT_TIMEOUT') && i < retries - 1) {
+                        const newDelay = delay * Math.pow(2, i); // Exponential backoff
+                        console.warn(`Service Unavailable, retrying in ${newDelay}ms...`);
+                        await new Promise(resolve => setTimeout(resolve, newDelay));
                     } else {
                         throw error;
                     }
