@@ -9,13 +9,13 @@ module.exports = {
     async execute(interaction) {
 
 
-        // Bogdan's user ID
+        // Dragos user ID
         const dragosUserId = '252394013464854528'; // Replace with Bogdan's actual Discord user ID
 
         // Create the embedded message
         const embed = new EmbedBuilder()
             .setColor('#0099ff')
-            .setTitle('Bogdan este seful tuturor')
+            .setTitle('Dragos este seful tuturor')
             .setDescription(
                 `- **Eu sunt fetita lui <@${dragosUserId}> pentru ca mi-am permis sa il deranjez!**`
             );
