@@ -9,6 +9,6 @@ module.exports = {
 		),
 
 	async execute(interaction) {
-        interaction.reply({ content: 'Pong', ephemeral: true });
+        interaction.reply({ content: 'Pong in pizda ma-tii', ephemeral: true });
 	},
 };
