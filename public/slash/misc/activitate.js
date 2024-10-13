@@ -1,11 +1,11 @@
+const { SlashCommandBuilder } = require("@discordjs/builders"); // Import the SlashCommandBuilder
 const { EmbedBuilder } = require("discord.js");
 const { executeQuery } = require("../../../database.js"); // Make sure this path is correct
 
 module.exports = {
-    data: {
-        name: 'activitate',
-        description: 'Display the activity log of admins.',
-    },
+    data: new SlashCommandBuilder() // Use SlashCommandBuilder to define the command
+        .setName('activitate')
+        .setDescription('Display the activity log of admins.'),
     async execute(interaction) {
         const allowedRoleIds = [
             '1167832049676210226', // Replace with your actual role IDs
