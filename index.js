@@ -27,15 +27,30 @@ const client = new Client({
 
 // —— Listening to messages to capture timeout events
 client.on('messageCreate', async (message) => {
+    // Log the message content for debugging
+    console.log(`Message received in channel: ${message.channel.id}`);
+    console.log(`Message content: ${message.content}`);
+
     // Check if the message is in the specific channel and sent by the bot
     if (message.channel.id === '1186580124334833715' && message.author.bot) {
+        // Log to verify the message source
+        console.log("Message is from the bot in the correct channel.");
+
         // Extract the admin's name from the message content
         const adminName = extractAdminName(message.content);
 
+        // Log the extracted admin name
+        console.log(`Extracted admin name: ${adminName}`);
+
         // If admin name is found, update their command usage count in the database
         if (adminName) {
+            console.log(`Attempting to update command count for admin: ${adminName}`);
             await incrementAdminCommandCount(adminName);
+        } else {
+            console.log("Admin name could not be extracted.");
         }
+    } else {
+        console.log("Message is not from the bot or in the wrong channel.");
     }
 });
 
@@ -55,6 +70,8 @@ async function incrementAdminCommandCount(adminName) {
     `;
 
     try {
+        // Log the query execution
+        console.log(`Executing query for admin: ${adminName}`);
         await pool.executeQuery(query, [adminName]);  // Assuming the pool export provides executeQuery
         console.log(`Updated command count for admin: ${adminName}`);
     } catch (error) {
