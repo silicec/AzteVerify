@@ -89,13 +89,13 @@ module.exports = {
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
-                        .setCustomId('sex_m')
-                        .setLabel('👨')  // Emoji for M (male)
-                        .setStyle(ButtonStyle.Primary),
-                    new ButtonBuilder()
-                        .setCustomId('sex_f')
-                        .setLabel('👩')  // Emoji for F (female)
-                        .setStyle(ButtonStyle.Primary)
+            .setCustomId('sex_m')
+            .setLabel('👨')  // Emoji for M (male)
+            .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+            .setCustomId('sex_f')
+            .setLabel('👩')  // Emoji for F (female)
+            .setStyle(ButtonStyle.Primary)
                 );
 
             await retryOnFailure(() => interaction.reply({ content: 'Please choose your role:', ephemeral: true }));
@@ -145,33 +145,6 @@ module.exports = {
             } else if (interaction.customId === 'remove_role') {
                 await retryOnFailure(() => member.roles.remove(roleId));
                 return retryOnFailure(() => interaction.reply({ content: 'Notificari Oprite!', ephemeral: true }));
-            }
-        }
-
-        // Handle the /activitate command
-        else if (interaction.commandName === 'activitate') {
-            // Check if the user is in the allowed admin list
-            const allowedAdmins = [
-                '1167832049676210226',
-                '1152659871678873600',
-                '1218662169391136808',
-                '1204183913010823229',
-                '1099255105083158569'
-            ];
-
-            if (!allowedAdmins.includes(interaction.user.id)) {
-                return await interaction.reply({ content: 'Nu ai permisiunea de a folosi această comandă.', ephemeral: true });
-            }
-
-            // Query to get the timeout count for the admin
-            const query = 'SELECT timeout_count FROM ActivitateAdmin WHERE admin_id = ?';
-            const result = await executeQuery(query, [interaction.user.id]);
-
-            if (result.length > 0) {
-                const timeoutCount = result[0].timeout_count;
-                await interaction.reply({ content: `Ai emis un total de ${timeoutCount} timeout-uri.`, ephemeral: true });
-            } else {
-                await interaction.reply({ content: 'Nu am găsit datele tale de activitate.', ephemeral: true });
             }
         }
     }
