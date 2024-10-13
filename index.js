@@ -56,9 +56,19 @@ client.on('messageCreate', async (message) => {
 
 // Function to extract admin's name from the message content
 function extractAdminName(messageContent) {
-    const regex = /By Staff Member\s*(.*)/;  // Match the "By Staff Member" line
-    const match = messageContent.match(regex);
-    return match ? match[1].trim() : null;  // Return the admin name if found
+    // Split the message by new lines
+    const lines = messageContent.split('\n');
+
+    // Find the line containing "By Staff Member"
+    const staffMemberIndex = lines.findIndex(line => line.includes("By Staff Member"));
+
+    // If the line exists and the next line contains the admin's name, return it
+    if (staffMemberIndex !== -1 && lines[staffMemberIndex + 1]) {
+        return lines[staffMemberIndex + 1].trim();
+    }
+
+    // Return null if no admin name was found
+    return null;
 }
 
 // Function to increment the admin's command usage count in the database
