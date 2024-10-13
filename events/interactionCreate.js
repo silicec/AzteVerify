@@ -89,13 +89,13 @@ module.exports = {
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
-                        .setCustomId('sex_m')
-                        .setLabel('👨')  // Emoji for M (male)
-                        .setStyle(ButtonStyle.Primary),
-                    new ButtonBuilder()
-                        .setCustomId('sex_f')
-                        .setLabel('👩')  // Emoji for F (female)
-                        .setStyle(ButtonStyle.Primary)
+            .setCustomId('sex_m')
+            .setLabel('👨')  // Emoji for M (male)
+            .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+            .setCustomId('sex_f')
+            .setLabel('👩')  // Emoji for F (female)
+            .setStyle(ButtonStyle.Primary)
                 );
 
             await retryOnFailure(() => interaction.reply({ content: 'Please choose your role:', ephemeral: true }));
@@ -145,51 +145,6 @@ module.exports = {
             } else if (interaction.customId === 'remove_role') {
                 await retryOnFailure(() => member.roles.remove(roleId));
                 return retryOnFailure(() => interaction.reply({ content: 'Notificari Oprite!', ephemeral: true }));
-            }
-        }
-
-        // Handle the /activitate command
-        else if (interaction.commandName === 'activitate') {
-            const allowedRoleIds = [
-                '1167832049676210226', // Replace with your actual role IDs
-                '1152659871678873600',
-                '1218662169391136808',
-                '1204183913010823229',
-                '1099255105083158569',
-            ];
-
-            // Check if the user has one of the allowed roles
-            const hasRole = interaction.member.roles.cache.some(role => allowedRoleIds.includes(role.id));
-
-            if (!hasRole) {
-                return interaction.reply({ content: 'Nu ai permisiunea de a utiliza aceasta comanda.', ephemeral: true });
-            }
-
-            try {
-                // Query to get the timeout counts
-                const results = await executeQuery('SELECT * FROM ActivitateAdmin');
-
-                // Create an embed message
-                const embed = new EmbedBuilder()
-                    .setColor('#0099ff')
-                    .setTitle('Activitatea Staff-ului')
-                    .setDescription('Numărul de timeout-uri date de fiecare membru staff:')
-                    .setTimestamp();
-
-                // Check if there are results
-                if (results.length > 0) {
-                    results.forEach(row => {
-                        embed.addFields({ name: `Admin ID: ${row.admin_id}`, value: `Timeout-uri emise: ${row.timeout_count}`, inline: true });
-                    });
-                } else {
-                    embed.addFields({ name: 'Nicio activitate', value: 'Nu s-au emis timeout-uri.', inline: false });
-                }
-
-                await interaction.reply({ embeds: [embed], ephemeral: true });
-
-            } catch (error) {
-                console.error("Error fetching activity data:", error);
-                await interaction.reply({ content: 'A apărut o eroare la obținerea activității.', ephemeral: true });
             }
         }
     }
