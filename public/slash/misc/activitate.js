@@ -1,4 +1,5 @@
 const { EmbedBuilder } = require("discord.js");
+const pool = require("../../../pool.js")
 const { executeQuery } = require("../../../database.js"); // Adjust the path according to your structure
 
 module.exports = {
