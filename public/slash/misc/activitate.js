@@ -1,6 +1,6 @@
 // public/slash/misc/activitate.js
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { executeQuery } = require('../../database'); // Adjust the path if necessary
+const { executeQuery } = require('../database.js'); // Adjust the path if necessary
 
 module.exports = {
     data: new SlashCommandBuilder()
