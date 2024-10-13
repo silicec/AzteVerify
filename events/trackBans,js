@@ -3,6 +3,7 @@ const { executeQuery } = require('../database.js');
 
 module.exports = {
     name: Events.GuildBanAdd,
+    console.log(`A ban was issued by ${ban.executor.tag}`);
     async execute(ban) {
         try {
             // Fetch the audit log entry for the ban
