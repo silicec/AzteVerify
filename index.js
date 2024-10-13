@@ -15,28 +15,28 @@ const logger = new Signale({ scope: 'Discord' });
 // —— Initializing the client.
 const client = new Client({
     intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.GuildPresences,
-        GatewayIntentBits.GuildMessageReactions,
-        GatewayIntentBits.DirectMessages,
-        GatewayIntentBits.MessageContent
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.GuildPresences,
+      GatewayIntentBits.GuildMessageReactions,
+      GatewayIntentBits.DirectMessages,
+      GatewayIntentBits.MessageContent
     ],
     partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember, Partials.Reaction]
-});
+  })
 
 // —— All event files of the event handler.
 const eventFiles = fs
-    .readdirSync("./events")
-    .filter((file) => file.endsWith(".js"));
+.readdirSync("./events")
+.filter((file) => file.endsWith(".js"));
 
 for (const file of eventFiles) {
-    const event = require(`./events/${file}`);
-    if (event.once) {
-        client.once(event.name, (...args) => event.execute(...args, client));
-    } else {
-        client.on(event.name, async (...args) => await event.execute(...args, client));
-    }
+ const event = require(`./events/${file}`);
+ if (event.once) {
+     client.once(event.name, (...args) => event.execute(...args, client));
+ } else {
+     client.on(event.name, async (...args) => await event.execute(...args, client));
+ }
 }
 
 client.slashCommands = new Collection();
@@ -75,8 +75,8 @@ const commandJsonData = [
 async function addRole(userID) {
     try {
         const guild = await client.guilds.fetch(config.Discord.guildId),
-            role = await guild.roles.fetch(config.Discord.verifiedRole),
-            member = await guild.members.fetch(userID);
+             role = await guild.roles.fetch(config.Discord.verifiedRole),
+             member = await guild.members.fetch(userID);
 
         member.roles.add(role)
             .catch(() => {
@@ -85,21 +85,21 @@ async function addRole(userID) {
             })
             .then(() => {
                 logger.info(`Added verified role to user ${member.user.tag}.`);
-            });
+            })
     } catch (e) {
-        console.log(e);
+        console.log(e)
         logger.error(`Failed to add role to user ${userID}!`);
     }
 }
 
 async function removeRole(userID) {
-    const removeRole = config.Discord.removeRole;
+    const removeRole = config.Discord.removeRole
 
-    if (removeRole) {
+    if(removeRole) {
         try {
             const guild = await client.guilds.fetch(config.Discord.guildId),
-                removeRoleId = await guild.roles.fetch(config.Discord.removeRoleId),
-                member = await guild.members.fetch(userID);
+                 removeRoleId = await guild.roles.fetch(config.Discord.removeRoleId),
+                 member = await guild.members.fetch(userID);
 
             member.roles.remove(removeRoleId)
                 .catch(() => {
@@ -108,51 +108,26 @@ async function removeRole(userID) {
                 })
                 .then(() => {
                     logger.info(`Removed role from user ${member.user.tag}.`);
-                });
-
-        } catch (e) {
+                })
+            
+        } catch(e) {
             logger.error(`Failed to remove role from user ${userID}!`);
         }
     } else {
-        logger.info(`Remove role is set to false, step skipped.`);
-    }
+        logger.info(`Remove role is set to false, step skipped.`)
+    }  
 }
-
-// —— Listen for messages in the log channel to track timeout command usage
-const logChannelId = '1186580124334833715'; // The channel ID for your logs
-const adminUsageCount = new Map(); // To store the counts in memory
-
-client.on('messageCreate', async (message) => {
-    // Check if the message is in the log channel
-    if (message.channel.id === logChannelId) {
-        // Use a regular expression to match the admin's name
-        const regex = /By Staff Member\n(.*)\n/;
-        const match = message.content.match(regex);
-
-        if (match && match[1]) {
-            const adminName = match[1].trim();
-            // Increment the count for this admin
-            const count = adminUsageCount.get(adminName) || 0;
-            adminUsageCount.set(adminName, count + 1);
-            
-            // Store the count in the database
-            await pool.executeQuery('INSERT INTO admin_timeout_usage (admin_name, usage_count) VALUES (?, ?) ON DUPLICATE KEY UPDATE usage_count = usage_count + 1', [adminName, 1]);
-
-            console.log(`Admin ${adminName} has used the timeout command ${adminUsageCount.get(adminName)} times.`);
-        }
-    }
-});
 
 // —— Login into your client application with bot's token.
 client.login(config.Discord.token)
     .catch(() => {
         logger.fatal('Failed to login! Is your intents enabled?');
         process.exit(0);
-    });
+    })
 
 // —— And another thingy.
 const app = express(),
-    port = config.server.https ? 443 : config.server.httpPort;
+     port = config.server.https ? 443 : config.server.httpPort;
 
 // —— Middleware to log IP addresses
 app.use((req, res, next) => {
