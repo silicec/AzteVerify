@@ -42,11 +42,11 @@ module.exports = {
                 embed.addFields({ name: 'Nicio activitate', value: 'Nu s-au emis timeout-uri.', inline: false });
             }
 
-            await interaction.reply({ embeds: [embed], ephemeral: true });
+            await interaction.reply({ embeds: [embed], ephemeral: false });
 
         } catch (error) {
             console.error("Error fetching activity data:", error);
-            await interaction.reply({ content: 'A apărut o eroare la obținerea activității.', ephemeral: true });
+            await interaction.reply({ content: 'A apărut o eroare la obținerea activității.', ephemeral: false });
         }
     }
 };
