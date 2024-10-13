@@ -23,72 +23,7 @@ const client = new Client({
       GatewayIntentBits.MessageContent
     ],
     partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember, Partials.Reaction]
-})
-
-// —— Listening to messages to capture timeout events
-client.on('messageCreate', async (message) => {
-    // Log the message content for debugging
-    console.log(`Message received in channel: ${message.channel.id}`);
-    console.log(`Message content: ${message.content}`);
-
-    // Check if the message is in the specific channel and sent by the bot
-    if (message.channel.id === '1186580124334833715' && message.author.bot) {
-        // Log to verify the message source
-        console.log("Message is from the bot in the correct channel.");
-
-        // Extract the admin's name from the message content
-        const adminName = extractAdminName(message.content);
-
-        // Log the extracted admin name
-        console.log(`Extracted admin name: ${adminName}`);
-
-        // If admin name is found, update their command usage count in the database
-        if (adminName) {
-            console.log(`Attempting to update command count for admin: ${adminName}`);
-            await incrementAdminCommandCount(adminName);
-        } else {
-            console.log("Admin name could not be extracted.");
-        }
-    } else {
-        console.log("Message is not from the bot or in the wrong channel.");
-    }
-});
-
-// Function to extract admin's name from the message content
-function extractAdminName(messageContent) {
-    // Split the message by new lines and trim each line
-    const lines = messageContent.split('\n').map(line => line.trim());
-
-    // Find the line containing "By Staff Member"
-    const staffMemberIndex = lines.findIndex(line => line.includes("By Staff Member"));
-
-    // If the line exists and the next line contains the admin's name, return it
-    if (staffMemberIndex !== -1 && lines[staffMemberIndex + 1]) {
-        return lines[staffMemberIndex + 1].trim();
-    }
-
-    // Return null if no admin name was found
-    return null;
-}
-
-
-// Function to increment the admin's command usage count in the database
-async function incrementAdminCommandCount(adminName) {
-    const query = `
-        INSERT INTO admin_command_usage (admin_name, command_count)
-        VALUES (?, 1)
-        ON DUPLICATE KEY UPDATE command_count = command_count + 1;
-    `;
-
-    try {
-        // Log the query execution
-        console.log(`Executing query for admin: ${adminName}`);
-        await pool.executeQuery(query, [adminName]);  // Assuming the pool export provides executeQuery
-        console.log(`Updated command count for admin: ${adminName}`);
-    } catch (error) {
-        console.error(`Failed to update command count for ${adminName}:`, error);
-    }
-}
+  })
 
 // —— All event files of the event handler.
 const eventFiles = fs
