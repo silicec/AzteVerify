@@ -1,7 +1,7 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 const config = require("../config.js");
 const pool = require("../pool.js");  // This is your database module for executing queries
-const { executeQuery } = require("../../database.js");
+const { executeQuery } = require("../database.js");
 
 module.exports = {
     name: 'interactionCreate',
