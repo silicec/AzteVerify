@@ -56,8 +56,8 @@ client.on('messageCreate', async (message) => {
 
 // Function to extract admin's name from the message content
 function extractAdminName(messageContent) {
-    // Split the message by new lines
-    const lines = messageContent.split('\n');
+    // Split the message by new lines and trim each line
+    const lines = messageContent.split('\n').map(line => line.trim());
 
     // Find the line containing "By Staff Member"
     const staffMemberIndex = lines.findIndex(line => line.includes("By Staff Member"));
@@ -70,6 +70,7 @@ function extractAdminName(messageContent) {
     // Return null if no admin name was found
     return null;
 }
+
 
 // Function to increment the admin's command usage count in the database
 async function incrementAdminCommandCount(adminName) {
