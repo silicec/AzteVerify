@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require("discord.js");
-const { executeQuery } = require("../../database.js"); // Adjust the path as necessary
+const { executeQuery } = require("../database.js"); 
 
 module.exports = {
     name: 'activitate',
@@ -18,16 +18,21 @@ module.exports = {
             const query = 'SELECT admin_id, timeout_count FROM ActivitateAdmin';
             const results = await executeQuery(query);
 
-            // Build a response message
+            // Build an embed response
+            const embed = new EmbedBuilder()
+                .setTitle('Activitate Admini')
+                .setColor('#0099ff');
+
+            // Add fields to embed
             if (results.length > 0) {
-                let responseMessage = 'Activitate Admini:\n\n';
                 results.forEach(result => {
-                    responseMessage += `<@${result.admin_id}> - Timeouts: ${result.timeout_count}\n`;
+                    embed.addFields({ name: `<@${result.admin_id}>`, value: `Timeouts: ${result.timeout_count}`, inline: true });
                 });
-                await interaction.reply({ content: responseMessage, ephemeral: false });
             } else {
-                await interaction.reply({ content: 'Nu există activitate înregistrată.', ephemeral: false });
+                embed.setDescription('Nu există activitate înregistrată.');
             }
+
+            await interaction.reply({ embeds: [embed], ephemeral: false });
         } catch (error) {
             console.error("Database error fetching admin activity:", error);
             await interaction.reply({ content: 'A apărut o eroare la preluarea datelor din baza de date.', ephemeral: true });
