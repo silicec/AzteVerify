@@ -15,28 +15,28 @@ const logger = new Signale({ scope: 'Discord' });
 // —— Initializing the client.
 const client = new Client({
     intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.GuildPresences,
-        GatewayIntentBits.GuildMessageReactions,
-        GatewayIntentBits.DirectMessages,
-        GatewayIntentBits.MessageContent
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.GuildPresences,
+      GatewayIntentBits.GuildMessageReactions,
+      GatewayIntentBits.DirectMessages,
+      GatewayIntentBits.MessageContent
     ],
     partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember, Partials.Reaction]
-});
+  })
 
 // —— All event files of the event handler.
 const eventFiles = fs
-    .readdirSync("./events")
-    .filter((file) => file.endsWith(".js"));
+.readdirSync("./events")
+.filter((file) => file.endsWith(".js"));
 
 for (const file of eventFiles) {
-    const event = require(`./events/${file}`);
-    if (event.once) {
-        client.once(event.name, (...args) => event.execute(...args, client));
-    } else {
-        client.on(event.name, async (...args) => await event.execute(...args, client));
-    }
+ const event = require(`./events/${file}`);
+ if (event.once) {
+     client.once(event.name, (...args) => event.execute(...args, client));
+ } else {
+     client.on(event.name, async (...args) => await event.execute(...args, client));
+ }
 }
 
 client.slashCommands = new Collection();
@@ -75,8 +75,8 @@ const commandJsonData = [
 async function addRole(userID) {
     try {
         const guild = await client.guilds.fetch(config.Discord.guildId),
-            role = await guild.roles.fetch(config.Discord.verifiedRole),
-            member = await guild.members.fetch(userID);
+             role = await guild.roles.fetch(config.Discord.verifiedRole),
+             member = await guild.members.fetch(userID);
 
         member.roles.add(role)
             .catch(() => {
@@ -87,19 +87,19 @@ async function addRole(userID) {
                 logger.info(`Added verified role to user ${member.user.tag}.`);
             })
     } catch (e) {
-        console.log(e);
+        console.log(e)
         logger.error(`Failed to add role to user ${userID}!`);
     }
 }
 
 async function removeRole(userID) {
-    const removeRole = config.Discord.removeRole;
+    const removeRole = config.Discord.removeRole
 
-    if (removeRole) {
+    if(removeRole) {
         try {
             const guild = await client.guilds.fetch(config.Discord.guildId),
-                removeRoleId = await guild.roles.fetch(config.Discord.removeRoleId),
-                member = await guild.members.fetch(userID);
+                 removeRoleId = await guild.roles.fetch(config.Discord.removeRoleId),
+                 member = await guild.members.fetch(userID);
 
             member.roles.remove(removeRoleId)
                 .catch(() => {
@@ -109,13 +109,13 @@ async function removeRole(userID) {
                 .then(() => {
                     logger.info(`Removed role from user ${member.user.tag}.`);
                 })
-
-        } catch (e) {
+            
+        } catch(e) {
             logger.error(`Failed to remove role from user ${userID}!`);
         }
     } else {
-        logger.info(`Remove role is set to false, step skipped.`);
-    }
+        logger.info(`Remove role is set to false, step skipped.`)
+    }  
 }
 
 // —— Login into your client application with bot's token.
@@ -125,33 +125,9 @@ client.login(config.Discord.token)
         process.exit(0);
     })
 
-// —— Listen for timeout messages from the specified bot.
-client.on('messageCreate', async (message) => {
-    // Check if the message is from the specified bot and in the specific channel
-    if (message.author.id === '1167240963895337031' && message.channel.id === '1186580124334833715') {
-        // Extract admin name from the message
-        const adminName = message.content.match(/By Staff Member\n(.+?)\n/);
-        
-        if (adminName && adminName[1]) {
-            const admin = adminName[1].trim();
-
-            // Log the timeout to the database
-            const query = 'INSERT INTO `activitate admini` (admin_name, timeout_count) VALUES (?, 1) ON DUPLICATE KEY UPDATE timeout_count = timeout_count + 1';
-            const params = [admin];
-
-            try {
-                await pool.executeQuery(query, params);
-                logger.info(`Logged timeout for admin: ${admin}`);
-            } catch (error) {
-                logger.error('Failed to log timeout:', error);
-            }
-        }
-    }
-});
-
 // —— And another thingy.
 const app = express(),
-    port = config.server.https ? 443 : config.server.httpPort;
+     port = config.server.https ? 443 : config.server.httpPort;
 
 // —— Middleware to log IP addresses
 app.use((req, res, next) => {
