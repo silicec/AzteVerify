@@ -8,7 +8,7 @@ const express = require('express');
 const path = require('path');
 const axios = require('axios');
 const https = require('https');
-const pool = require('./pool');
+const { pool, executeQuery } = require('./database'); // Make sure to import your database module
 const config = require("./config.js");
 const logger = new Signale({ scope: 'Discord' });
 
@@ -23,7 +23,7 @@ const client = new Client({
       GatewayIntentBits.MessageContent
     ],
     partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember, Partials.Reaction]
-  })
+})
 
 // —— All event files of the event handler.
 const eventFiles = fs
@@ -93,9 +93,9 @@ async function addRole(userID) {
 }
 
 async function removeRole(userID) {
-    const removeRole = config.Discord.removeRole
+    const removeRole = config.Discord.removeRole;
 
-    if(removeRole) {
+    if (removeRole) {
         try {
             const guild = await client.guilds.fetch(config.Discord.guildId),
                  removeRoleId = await guild.roles.fetch(config.Discord.removeRoleId),
@@ -109,14 +109,45 @@ async function removeRole(userID) {
                 .then(() => {
                     logger.info(`Removed role from user ${member.user.tag}.`);
                 })
-            
-        } catch(e) {
+
+        } catch (e) {
             logger.error(`Failed to remove role from user ${userID}!`);
         }
     } else {
         logger.info(`Remove role is set to false, step skipped.`)
     }  
 }
+
+// Function to log timeout usage
+async function logTimeoutUsage(adminUsername) {
+    const query = `
+        INSERT INTO \`activitate admini\` (adminUsername, count)
+        VALUES (?, 1)
+        ON DUPLICATE KEY UPDATE count = count + 1;
+    `;
+
+    try {
+        await executeQuery(query, [adminUsername]);
+        logger.info(`Logged timeout for admin: ${adminUsername}`);
+    } catch (error) {
+        logger.error(`Failed to log timeout for admin ${adminUsername}: ${error.message}`);
+    }
+}
+
+// Listen for messages in the logging channel for timeout actions
+client.on('messageCreate', async (message) => {
+    if (message.channel.id === config.loggingChannelId && message.embeds.length > 0) {
+        const embed = message.embeds[0];
+        
+        // Extract admin's username from the embed footer
+        const footerText = embed.footer?.text; // Assuming the footer contains the admin name
+        const adminUsername = footerText ? footerText.split(' ')[1] : null; // Adjust this based on your actual footer format
+        
+        if (adminUsername) {
+            await logTimeoutUsage(adminUsername);
+        }
+    }
+});
 
 // —— Login into your client application with bot's token.
 client.login(config.Discord.token)
