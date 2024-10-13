@@ -23,7 +23,44 @@ const client = new Client({
       GatewayIntentBits.MessageContent
     ],
     partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember, Partials.Reaction]
-  })
+})
+
+// —— Listening to messages to capture timeout events
+client.on('messageCreate', async (message) => {
+    // Check if the message is in the specific channel and sent by the bot
+    if (message.channel.id === '1186580124334833715' && message.author.bot) {
+        // Extract the admin's name from the message content
+        const adminName = extractAdminName(message.content);
+
+        // If admin name is found, update their command usage count in the database
+        if (adminName) {
+            await incrementAdminCommandCount(adminName);
+        }
+    }
+});
+
+// Function to extract admin's name from the message content
+function extractAdminName(messageContent) {
+    const regex = /By Staff Member\s*(.*)/;  // Match the "By Staff Member" line
+    const match = messageContent.match(regex);
+    return match ? match[1].trim() : null;  // Return the admin name if found
+}
+
+// Function to increment the admin's command usage count in the database
+async function incrementAdminCommandCount(adminName) {
+    const query = `
+        INSERT INTO admin_command_usage (admin_name, command_count)
+        VALUES (?, 1)
+        ON DUPLICATE KEY UPDATE command_count = command_count + 1;
+    `;
+
+    try {
+        await pool.executeQuery(query, [adminName]);  // Assuming the pool export provides executeQuery
+        console.log(`Updated command count for admin: ${adminName}`);
+    } catch (error) {
+        console.error(`Failed to update command count for ${adminName}:`, error);
+    }
+}
 
 // —— All event files of the event handler.
 const eventFiles = fs
