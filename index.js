@@ -8,35 +8,51 @@ const express = require('express');
 const path = require('path');
 const axios = require('axios');
 const https = require('https');
-const { pool, executeQuery } = require('./database'); // Make sure to import your database module
+const pool = require('./pool');
 const config = require("./config.js");
 const logger = new Signale({ scope: 'Discord' });
 
 // —— Initializing the client.
 const client = new Client({
     intents: [
-      GatewayIntentBits.Guilds,
-      GatewayIntentBits.GuildMessages,
-      GatewayIntentBits.GuildPresences,
-      GatewayIntentBits.GuildMessageReactions,
-      GatewayIntentBits.DirectMessages,
-      GatewayIntentBits.MessageContent
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildPresences,
+        GatewayIntentBits.GuildMessageReactions,
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.MessageContent
     ],
     partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember, Partials.Reaction]
-})
+});
+
+// —— Logging admin timeouts
+async function logAdminTimeout(adminUsername) {
+    const query = `
+        INSERT INTO \`activitate admini\` (adminUsername, count) 
+        VALUES (?, 1) 
+        ON DUPLICATE KEY UPDATE count = count + 1;
+    `;
+
+    try {
+        await pool.executeQuery(query, [adminUsername]);
+        logger.success(`Logged timeout for admin: ${adminUsername}`);
+    } catch (error) {
+        logger.error(`Failed to log timeout for admin: ${adminUsername}`, error);
+    }
+}
 
 // —— All event files of the event handler.
 const eventFiles = fs
-.readdirSync("./events")
-.filter((file) => file.endsWith(".js"));
+    .readdirSync("./events")
+    .filter((file) => file.endsWith(".js"));
 
 for (const file of eventFiles) {
- const event = require(`./events/${file}`);
- if (event.once) {
-     client.once(event.name, (...args) => event.execute(...args, client));
- } else {
-     client.on(event.name, async (...args) => await event.execute(...args, client));
- }
+    const event = require(`./events/${file}`);
+    if (event.once) {
+        client.once(event.name, (...args) => event.execute(...args, client));
+    } else {
+        client.on(event.name, async (...args) => await event.execute(...args, client));
+    }
 }
 
 client.slashCommands = new Collection();
@@ -75,8 +91,8 @@ const commandJsonData = [
 async function addRole(userID) {
     try {
         const guild = await client.guilds.fetch(config.Discord.guildId),
-             role = await guild.roles.fetch(config.Discord.verifiedRole),
-             member = await guild.members.fetch(userID);
+            role = await guild.roles.fetch(config.Discord.verifiedRole),
+            member = await guild.members.fetch(userID);
 
         member.roles.add(role)
             .catch(() => {
@@ -85,7 +101,7 @@ async function addRole(userID) {
             })
             .then(() => {
                 logger.info(`Added verified role to user ${member.user.tag}.`);
-            })
+            });
     } catch (e) {
         console.log(e)
         logger.error(`Failed to add role to user ${userID}!`);
@@ -98,8 +114,8 @@ async function removeRole(userID) {
     if (removeRole) {
         try {
             const guild = await client.guilds.fetch(config.Discord.guildId),
-                 removeRoleId = await guild.roles.fetch(config.Discord.removeRoleId),
-                 member = await guild.members.fetch(userID);
+                removeRoleId = await guild.roles.fetch(config.Discord.removeRoleId),
+                member = await guild.members.fetch(userID);
 
             member.roles.remove(removeRoleId)
                 .catch(() => {
@@ -108,43 +124,35 @@ async function removeRole(userID) {
                 })
                 .then(() => {
                     logger.info(`Removed role from user ${member.user.tag}.`);
-                })
+                });
 
         } catch (e) {
             logger.error(`Failed to remove role from user ${userID}!`);
         }
     } else {
-        logger.info(`Remove role is set to false, step skipped.`)
-    }  
-}
-
-// Function to log timeout usage
-async function logTimeoutUsage(adminUsername) {
-    const query = `
-        INSERT INTO \`activitate admini\` (adminUsername, count)
-        VALUES (?, 1)
-        ON DUPLICATE KEY UPDATE count = count + 1;
-    `;
-
-    try {
-        await executeQuery(query, [adminUsername]);
-        logger.info(`Logged timeout for admin: ${adminUsername}`);
-    } catch (error) {
-        logger.error(`Failed to log timeout for admin ${adminUsername}: ${error.message}`);
+        logger.info(`Remove role is set to false, step skipped.`);
     }
 }
 
-// Listen for messages in the logging channel for timeout actions
+// New event listener for logging admin timeouts
 client.on('messageCreate', async (message) => {
-    if (message.channel.id === config.loggingChannelId && message.embeds.length > 0) {
-        const embed = message.embeds[0];
+    // Check if the message contains the timeout log format
+    if (message.content.includes('/timeout')) {
+        // Extract the admin name from the message
+        const adminMatch = message.content.match(/By Staff Member\s*([^\n]+)/);
+        const reasonMatch = message.content.match(/Reason\s*([^\n]+)/);
+        const durationMatch = message.content.match(/Duration\s*([^\n]+)/);
         
-        // Extract admin's username from the embed footer
-        const footerText = embed.footer?.text; // Assuming the footer contains the admin name
-        const adminUsername = footerText ? footerText.split(' ')[1] : null; // Adjust this based on your actual footer format
-        
-        if (adminUsername) {
-            await logTimeoutUsage(adminUsername);
+        if (adminMatch && adminMatch[1]) {
+            const adminUsername = adminMatch[1].trim(); // Extracts the username
+            await logAdminTimeout(adminUsername); // Log the timeout for the admin
+            
+            // Log other details if needed
+            const reason = reasonMatch ? reasonMatch[1].trim() : 'No reason provided';
+            const duration = durationMatch ? durationMatch[1].trim() : 'No duration specified';
+            logger.info(`Admin ${adminUsername} issued a timeout: Reason: ${reason}, Duration: ${duration}`);
+        } else {
+            logger.error('Admin username not found in the timeout message.');
         }
     }
 });
@@ -154,11 +162,11 @@ client.login(config.Discord.token)
     .catch(() => {
         logger.fatal('Failed to login! Is your intents enabled?');
         process.exit(0);
-    })
+    });
 
 // —— And another thingy.
 const app = express(),
-     port = config.server.https ? 443 : config.server.httpPort;
+    port = config.server.https ? 443 : config.server.httpPort;
 
 // —— Middleware to log IP addresses
 app.use((req, res, next) => {
