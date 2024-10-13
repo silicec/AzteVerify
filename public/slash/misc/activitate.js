@@ -2,16 +2,25 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { executeQuery } = require('../database.js'); // Adjust the path if necessary
 
+// Role IDs that can access the /activitate command
+const allowedRoleIds = [
+    '1167832049676210226', // Replace with your actual role IDs
+    '1152659871678873600',
+    '1218662169391136808',
+    '1204183913010823229',
+    '1099255105083158569',
+];
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('activitate')
         .setDescription('Afiseaza activitatea staff-ului.'),
 
     async execute(interaction) {
-        // Check if the user is an authorized admin
-        const allowedAdminIds = ['1167832049676210226', '1152659871678873600', '1218662169391136808', '1204183913010823229', '1099255105083158569'];
-        
-        if (!allowedAdminIds.includes(interaction.user.id)) {
+        // Check if the user has one of the allowed roles
+        const hasRole = interaction.member.roles.cache.some(role => allowedRoleIds.includes(role.id));
+
+        if (!hasRole) {
             return interaction.reply({ content: 'Nu ai permisiunea de a utiliza aceasta comanda.', ephemeral: true });
         }
 
