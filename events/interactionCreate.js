@@ -1,6 +1,6 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 const config = require("../config.js");
-const pool = require("../pool.js");  // This is your database module for executing queries
+const pool = require("../pool.js");  // Your database module for executing queries
 const { executeQuery } = require("../database.js");
 
 module.exports = {
@@ -22,6 +22,37 @@ module.exports = {
                         throw error;
                     }
                 }
+            }
+        }
+
+        // Handle the /activitate command
+        else if (interaction.commandName === 'activitate') {
+            const allowedUserIds = ['1167832049676210226', '1152659871678873600', '1218662169391136808', '1204183913010823229', '1099255105083158569'];
+            
+            // Check if the user is allowed to use the command
+            if (!allowedUserIds.includes(interaction.user.id)) {
+                await interaction.reply({ content: 'Nu ai permisiunea de a utiliza această comandă.', ephemeral: true });
+                return;
+            }
+
+            try {
+                // Query to fetch all admin timeout counts from the database
+                const query = 'SELECT admin_id, timeout_count FROM ActivitateAdmin';
+                const results = await executeQuery(query);
+
+                // Build a response message
+                if (results.length > 0) {
+                    let responseMessage = 'Activitate Admini:\n\n';
+                    results.forEach(result => {
+                        responseMessage += `<@${result.admin_id}> - Timeouts: ${result.timeout_count}\n`;
+                    });
+                    await interaction.reply({ content: responseMessage, ephemeral: false });
+                } else {
+                    await interaction.reply({ content: 'Nu există activitate înregistrată.', ephemeral: false });
+                }
+            } catch (error) {
+                console.error("Database error fetching admin activity:", error);
+                await interaction.reply({ content: 'A apărut o eroare la preluarea datelor din baza de date.', ephemeral: true });
             }
         }
 
@@ -84,18 +115,19 @@ module.exports = {
                 logVerificationAttempt(interaction, 'failed', 'Failed to send ephemeral verification link');
             }
         }
+
         // Handle the /sex command
         else if (interaction.commandName === 'sex') {
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
-            .setCustomId('sex_m')
-            .setLabel('👨')  // Emoji for M (male)
-            .setStyle(ButtonStyle.Primary),
-        new ButtonBuilder()
-            .setCustomId('sex_f')
-            .setLabel('👩')  // Emoji for F (female)
-            .setStyle(ButtonStyle.Primary)
+                        .setCustomId('sex_m')
+                        .setLabel('👨')  // Emoji for M (male)
+                        .setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder()
+                        .setCustomId('sex_f')
+                        .setLabel('👩')  // Emoji for F (female)
+                        .setStyle(ButtonStyle.Primary)
                 );
 
             await retryOnFailure(() => interaction.reply({ content: 'Please choose your role:', ephemeral: true }));
@@ -130,7 +162,7 @@ module.exports = {
             }
         }
 
-        // Handle the new role button interactions (your added code)
+        // Handle new role button interactions (your added code)
         if (interaction.isButton()) {
             const roleId = '1282322433398935624'; // Replace with the role ID you want to manage
 
