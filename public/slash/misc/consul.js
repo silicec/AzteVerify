@@ -15,7 +15,7 @@ module.exports = {
         }
 
         // The role you want to assign
-        const roleId = '1152659871678873600'; // Replace with the role ID you want to assign to yourself
+        const roleId = '1218662169391136808'; // Replace with the role ID you want to assign to yourself
 
         // Fetch the role
         const role = interaction.guild.roles.cache.get(roleId);
