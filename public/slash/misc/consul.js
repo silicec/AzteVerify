@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('manevra')  // The command you will use, e.g., "/secretrole"
+        .setName('emoloi')  // The command you will use, e.g., "/secretrole"
         .setDescription('Anti troll'),
 
     async execute(interaction) {
