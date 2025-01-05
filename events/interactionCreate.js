@@ -89,13 +89,13 @@ module.exports = {
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
-            .setCustomId('sex_m')
-            .setLabel('👨')  // Emoji for M (male)
-            .setStyle(ButtonStyle.Primary),
-        new ButtonBuilder()
-            .setCustomId('sex_f')
-            .setLabel('👩')  // Emoji for F (female)
-            .setStyle(ButtonStyle.Primary)
+                        .setCustomId('sex_m')
+                        .setLabel('👨')  // Emoji for M (male)
+                        .setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder()
+                        .setCustomId('sex_f')
+                        .setLabel('👩')  // Emoji for F (female)
+                        .setStyle(ButtonStyle.Primary)
                 );
 
             await retryOnFailure(() => interaction.reply({ content: 'Please choose your role:', ephemeral: true }));
@@ -104,6 +104,15 @@ module.exports = {
 
         // Handle button interactions for role assignment
         else if (interaction.customId === 'sex_m' || interaction.customId === 'sex_f') {
+            // Check if the user is blocked
+            if (interaction.user.id === '967184437160849448') {
+                await retryOnFailure(() => interaction.reply({ 
+                    content: 'Daca te mai vad cu grad de femeie ai kick si ban.', 
+                    ephemeral: true 
+                }));
+                return; // Exit the handler
+            }
+
             const roleIdToAdd = interaction.customId === 'sex_m' ? '1281964247487610974' : '1281964421622792254'; // Role IDs for M and F
             const roleIdToRemove = interaction.customId === 'sex_m' ? '1281964421622792254' : '1281964247487610974'; // Opposite role ID
             const genderValue = interaction.customId === 'sex_m' ? 0 : 1; // Gender value for database (0 for male, 1 for female)
